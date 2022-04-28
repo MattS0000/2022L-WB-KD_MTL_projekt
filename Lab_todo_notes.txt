@@ -1,0 +1,8 @@
+zmiana wag losu
+predict na modelach i kolejne uczenie i kolejny predict i kolejne uczenie
+modyfikacja dataset.py
+dodanie val_set
+sprawdzenie odciecie ResNet'u
+sprawdzenie koordynatów
+qybrac "wersje artykulu"
+wybranie tasków
