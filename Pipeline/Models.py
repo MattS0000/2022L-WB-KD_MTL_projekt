@@ -112,7 +112,7 @@ class MTL(nn.Module):
         if self.state == 'M1':
             print("\nTotal Loss: {}\nLoss0: {}  Accuracy0: {}\nLoss1: {}  Accuracy1: {}\nLoss2: {}\nLoss3: {}".format(
                 train_loss, loss0sum, accuracy0 * 100 / 413, loss1sum, accuracy1 * 100 / 413, loss2sum, loss3sum))
-        if self.state == 'M2' or self.state == 'M2':
+        if self.state == 'M2' or self.state == 'M3':
             print(
                 "\nTotal Loss: {}\nLoss0: {} \nLoss1: {}  \nLoss2: {}\nLoss3: {}".format(train_loss, loss0sum, loss1sum,
                                                                                          loss2sum, loss3sum))
