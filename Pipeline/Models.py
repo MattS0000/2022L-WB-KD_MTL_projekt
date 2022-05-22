@@ -50,10 +50,10 @@ class MTL(nn.Module):
             current_loss = self.fit_iter(train_dl, Rx, Ry)
             if current_loss.item() < best_loss:
                 best_loss = current_loss.item()
-                if self.state == 'M1':
-                    torch.save(self.state_dict(), 'M1_weights' + str(tasks) + '.pt')
-                if self.state == 'M2':
-                    torch.save(self.state_dict(), 'M2_weights' + str(tasks) + '.pt')
+                #if self.state == 'M1':
+                #    torch.save(self.state_dict(), 'M1_weights' + str(tasks) + '.pt')
+                #elif self.state == 'M2' or self.state == 'M3':
+                torch.save(self.state_dict(), self.state+'_weights' + str(tasks) + '.pt')
                 print("Saved best model weights!")
 
     def fit_iter(self, train_dl, Rx, Ry):
@@ -84,7 +84,7 @@ class MTL(nn.Module):
                                                    fovea_center_labels.to(device).to(torch.double))) / 10
                 loss3 = torch.sqrt(self.criterion2(optical_disk_pred.to(torch.double),
                                                    optical_disk_labels.to(device).to(torch.double))) / 10
-            if self.state == 'M2':
+            elif self.state == 'M2' or self.state == 'M3':
                 loss0 = self.criterion(F.log_softmax(retinopathy_pred.double(), dim=-1),
                                        F.softmax(retinopathy_label.to(device).double(), dim=-1)).double()
                 loss1 = self.criterion(F.log_softmax(macular_edema_pred.double(), dim=-1),
@@ -93,6 +93,7 @@ class MTL(nn.Module):
                                                    fovea_center_labels.to(device).to(torch.double)))
                 loss3 = torch.sqrt(self.criterion2(optical_disk_pred.to(torch.double),
                                                    optical_disk_labels.to(device).to(torch.double)))
+
             loss0sum += loss0
             loss1sum += loss1
             loss2sum += loss2
@@ -111,7 +112,7 @@ class MTL(nn.Module):
         if self.state == 'M1':
             print("\nTotal Loss: {}\nLoss0: {}  Accuracy0: {}\nLoss1: {}  Accuracy1: {}\nLoss2: {}\nLoss3: {}".format(
                 train_loss, loss0sum, accuracy0 * 100 / 413, loss1sum, accuracy1 * 100 / 413, loss2sum, loss3sum))
-        if self.state == 'M2':
+        if self.state == 'M2' or self.state == 'M2':
             print(
                 "\nTotal Loss: {}\nLoss0: {} \nLoss1: {}  \nLoss2: {}\nLoss3: {}".format(train_loss, loss0sum, loss1sum,
                                                                                          loss2sum, loss3sum))

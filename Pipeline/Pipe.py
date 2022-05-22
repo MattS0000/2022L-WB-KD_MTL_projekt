@@ -4,8 +4,8 @@ import pandas as pd
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from Pipeline.datasets import IDRiD_Dataset, IDRiD_Dataset_teacher, IDRiD_Dataset_unlabeled_preds
-from Pipeline.models import MTL
+from Pipeline.Datasets import IDRiD_Dataset, IDRiD_Dataset_Teacher, IDRiD_Dataset_Unlabeled_Preds
+from Pipeline.Models import MTL
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -20,7 +20,7 @@ class Pipe():
         self.Ry = ry / old_y
         self.M1 = MTL('M1').to(device)
         self.M2 = MTL('M2').to(device)
-        self.M3=MTL('M3').to(device)
+        self.M3 = MTL('M3').to(device)
         self.data_transformer = transforms.Compose([transforms.Resize((rx, ry)), transforms.ToTensor(),
                                                     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                                                          std=[0.229, 0.224, 0.225])])
@@ -53,7 +53,7 @@ class Pipe():
         data.to_csv('./drive/MyDrive/IDRID/Labels/train/M1_predictions' + str(tasks) + '.csv')
 
     def fit_predict_M2(self, tasks, epochs):
-        self.M2_train_ds = IDRiD_Dataset_teacher(self.data_transformer, tasks, 'train')
+        self.M2_train_ds = IDRiD_Dataset_Teacher(self.data_transformer, tasks, 'train')
         self.M2_train_dl = DataLoader(self.M2_train_ds, batch_size=32, shuffle=True)
         self.M2_optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, self.M2.parameters()),
                                             weight_decay=1e-6,
@@ -78,7 +78,7 @@ class Pipe():
         data.to_csv('./drive/MyDrive/IDRID/Labels/train/M2_predictions' + str(tasks) + '.csv')
 
     def fit_M3(self, tasks, epochs):
-        self.M3_train_ds = IDRiD_Dataset_unlabeled_preds(self.data_transformer, tasks, data_type='test')
+        self.M3_train_ds = IDRiD_Dataset_Unlabeled_Preds(self.data_transformer, tasks, data_type="train")
         self.M3_train_dl = DataLoader(self.M3_train_ds, batch_size=32, shuffle=True)
         self.M3_optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, self.M3.parameters()),
                                             weight_decay=1e-6,

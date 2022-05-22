@@ -8,7 +8,7 @@ path2labels = './drive/MyDrive/IDRID/Labels/'
 
 
 class IDRiD_General_Dataset(Dataset):
-    def __init__(self, transform, data_type, csv_filename):
+    def __init__(self, transform, data_type, csv_filename, index=1):
         # path to images
         path2data = os.path.join(path2img, data_type)
         # list of images
@@ -19,7 +19,7 @@ class IDRiD_General_Dataset(Dataset):
         path2csvLabels = os.path.join(path2labels, data_type, csv_filename)
         print(path2csvLabels)
         labels_df = pd.read_csv(path2csvLabels, index_col=[0])
-        self.labels = labels_df.iloc[:, :]
+        self.labels = labels_df.iloc[:, index:]
         self.transform = transform
 
     def __len__(self):
@@ -32,7 +32,7 @@ class IDRiD_General_Dataset(Dataset):
 class IDRiD_Dataset(IDRiD_General_Dataset):
     def __init__(self, transform, data_type="train"):
         # path to images
-        super().__init__(transform, data_type, "labels.csv")
+        super().__init__(transform, data_type, "labels.csv", index=1)
 
     def __getitem__(self, idx):
         image = Image.open(self.full_filenames[idx])
@@ -42,9 +42,9 @@ class IDRiD_Dataset(IDRiD_General_Dataset):
 
 
 class IDRiD_Dataset_Teacher(IDRiD_General_Dataset):
-    def __init__(self, transform, tasks, data_type="train"):
+    def __init__(self, transform, tasks, data_type="train",  model_num = "M1", index=0):
         # path to images
-        super().__init__(transform, data_type, "M1_predictions" + str(tasks) + ".csv")
+        super().__init__(transform, data_type, model_num + "_predictions" + str(tasks) + ".csv", index=index)
 
     def __getitem__(self, idx):
         image = Image.open(self.full_filenames[idx])
@@ -54,5 +54,5 @@ class IDRiD_Dataset_Teacher(IDRiD_General_Dataset):
 
 
 class IDRiD_Dataset_Unlabeled_Preds(IDRiD_Dataset_Teacher):
-    def __init__(self, transform, tasks, data_type="test"):
-        super().__init__(transform, tasks, data_type)
+    def __init__(self, transform, tasks, data_type="train"):
+        super().__init__(transform, tasks, data_type=data_type, model_num = "M2",  index=0)
