@@ -4,7 +4,7 @@ import pandas as pd
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-#from pipe_datasets import IDRiD_Dataset, IDRiD_Dataset_teacher, IDRiD_Dataset_unlabeled_preds
+#from pipe_datasets import IDRiD_Dataset, IDRiD_Dataset_Teacher_Preds, IDRiD_Dataset_Unlabeled_Preds
 from pipe_dataset1 import IDRiD_Dataset
 from pipe_dataset2 import IDRiD_Dataset_teacher
 #from pipe_dataset3 import IDRiD_Dataset_unlabeled_preds
