@@ -66,8 +66,14 @@ class MTL(nn.Module):
         loss = torch.tensor(0)
         accuracy0 = 0.0
         accuracy1 = 0.0
-        for i, (imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels) in enumerate(
-                train_dl):
+        for i, tupel_train in enumerate(train_dl):
+            #if self.state == 'M1' or self.state == 'M3':
+            #    imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels = tupel_train
+            #else :
+            #    imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels, \
+            #    retinopathy_label2, macular_edema_label2, fovea_center_labels2, optical_disk_labels2 = tupel_train
+            imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels = tupel_train
+
             fovea_center_labels[:0], fovea_center_labels[:1] = fovea_center_labels[:0] * Rx, fovea_center_labels[
                                                                                              :1] * Ry
             optical_disk_labels[:0], optical_disk_labels[:1] = optical_disk_labels[:0] * Rx, optical_disk_labels[
