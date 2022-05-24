@@ -1,7 +1,9 @@
+from pickle import TRUE
 import torchvision.models as models
 import torch
 import torch.nn.functional as F
 from torch import nn
+import numpy as np
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -67,17 +69,14 @@ class MTL(nn.Module):
         accuracy0 = 0.0
         accuracy1 = 0.0
         for i, tupel_train in enumerate(train_dl):
-            #if self.state == 'M1' or self.state == 'M3':
-            #    imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels = tupel_train
-            #else :
-            #    imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels, \
-            #    retinopathy_label2, macular_edema_label2, fovea_center_labels2, optical_disk_labels2 = tupel_train
-            imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels = tupel_train
+            if self.state == 'M1' or self.state == 'M3':
+                imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels = tupel_train
+            elif self.state == "M2":
+                imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels, retinopathy_label2, macular_edema_label2, fovea_center_labels2, optical_disk_labels2 = tupel_train
+            #imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels = tupel_train
 
-            fovea_center_labels[:0], fovea_center_labels[:1] = fovea_center_labels[:0] * Rx, fovea_center_labels[
-                                                                                             :1] * Ry
-            optical_disk_labels[:0], optical_disk_labels[:1] = optical_disk_labels[:0] * Rx, optical_disk_labels[
-                                                                                             :1] * Ry
+            fovea_center_labels[:0], fovea_center_labels[:1] = fovea_center_labels[:0] * Rx, fovea_center_labels[:1] * Ry
+            optical_disk_labels[:0], optical_disk_labels[:1] = optical_disk_labels[:0] * Rx, optical_disk_labels[:1] * Ry
             batch_size = imgs.size(0)
             self.optimizer.zero_grad()
             retinopathy_pred, macular_edema_pred, fovea_center_pred, optical_disk_pred = self.forward(imgs.to(device))
@@ -86,11 +85,20 @@ class MTL(nn.Module):
                     torch.float64) * 10
                 loss1 = self.criterion(macular_edema_pred, macular_edema_label.to(device).to(torch.int64)).to(
                     torch.float64) * 10
-                loss2 = torch.sqrt(self.criterion2(fovea_center_pred.to(torch.double),
-                                                   fovea_center_labels.to(device).to(torch.double))) / 10
-                loss3 = torch.sqrt(self.criterion2(optical_disk_pred.to(torch.double),
-                                                   optical_disk_labels.to(device).to(torch.double))) / 10
-            elif self.state == 'M2' or self.state == 'M3':
+                loss2 = torch.sqrt(self.criterion2(fovea_center_pred.to(torch.double),fovea_center_labels.to(device).to(torch.double))) / 10
+                loss3 = torch.sqrt(self.criterion2(optical_disk_pred.to(torch.double), optical_disk_labels.to(device).to(torch.double))) / 10
+            elif self.state == 'M2':
+                lossCE = nn.CrossEntropyLoss()
+                lossKL = nn.KLDivLoss(reduction='batchmean')
+                loss0CE = lossCE(retinopathy_pred, torch.reshape(retinopathy_label2, (-1,)).to(device).to(torch.int64)).to(torch.float64)
+                loss1CE = lossCE(macular_edema_pred, torch.reshape(macular_edema_label2, (-1, )).to(device).to(torch.int64)).to(torch.float64)
+                loss0KL = lossKL(F.log_softmax(retinopathy_pred.double(), dim=-1), retinopathy_label.to(device)) * 10
+                loss1KL = lossKL(F.log_softmax(macular_edema_pred.double(), dim=-1), macular_edema_label.to(device)) * 10
+                loss2 = torch.sqrt(self.criterion2(fovea_center_pred.to(torch.double), fovea_center_labels.to(device).to(torch.double)))
+                loss3 = torch.sqrt(self.criterion2(optical_disk_pred.to(torch.double), optical_disk_labels.to(device).to(torch.double)))
+                loss0 = loss0CE*0.6 + loss0KL*0.4
+                loss1 = loss1CE*0.6 + loss1KL*0.4
+            elif self.state =="M3":
                 loss0 = self.criterion(F.log_softmax(retinopathy_pred.double(), dim=-1),
                                        F.softmax(retinopathy_label.to(device).double(), dim=-1)).double()
                 loss1 = self.criterion(F.log_softmax(macular_edema_pred.double(), dim=-1),
@@ -100,7 +108,7 @@ class MTL(nn.Module):
                 loss3 = torch.sqrt(self.criterion2(optical_disk_pred.to(torch.double),
                                                    optical_disk_labels.to(device).to(torch.double)))
 
-            loss0sum += loss0
+            loss0sum += loss0 
             loss1sum += loss1
             loss2sum += loss2
             loss3sum += loss3
@@ -110,6 +118,8 @@ class MTL(nn.Module):
                 pred1 = F.softmax(macular_edema_pred, dim=-1).argmax(dim=-1)
                 accuracy1 += pred1.eq(macular_edema_label.to(device)).sum().item()
             loss = torch.stack((loss0, loss1, loss2, loss3))[self.tasks].sum()
+# 
+  #          lossKL = torch.stack((lossKL0, lossKL1, lossKL2, lossKL3))[self.tasks].sum()
             progress_bar(i + 1, len(train_dl))
             # print('Batch number: {}\nLoss on batch: {}\nLoss0: {}\nLoss1: {}\nLoss2: {}\nLoss3: {}\n-----------------------'.format(i,loss.item(), loss0.item(), loss1.item(), loss2.item() ,loss3.item()))
             loss.backward()

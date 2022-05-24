@@ -6,7 +6,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.nn.functional import softmax
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from Pipeline.Datasets import IDRiD_Dataset, IDRiD_Dataset_Teacher, IDRiD_Dataset_Unlabeled_Preds
+from Pipeline.Datasets import IDRiD_Dataset, IDRiD_Dataset_Teacher, IDRiD_Dataset_Unlabeled_Preds, IDRiD_Dataset2
 from Pipeline.Models import MTL
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -110,7 +110,7 @@ class Pipe():
         data.to_csv('./drive/MyDrive/IDRID/Labels/train/M1_predictions' + str(tasks) + '.csv')
 
     def fit_predict_M2(self, tasks, epochs):
-        self.M2_train_ds = IDRiD_Dataset_Teacher(self.data_transformer, tasks, 'train')
+        self.M2_train_ds = IDRiD_Dataset2(self.data_transformer, tasks, 'train')
         self.M2_train_dl = DataLoader(self.M2_train_ds, batch_size=32, shuffle=True)
         self.M2_optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, self.M2.parameters()),
                                             weight_decay=1e-6,
@@ -123,18 +123,17 @@ class Pipe():
                                               min_lr=1e-7,
                                               verbose=True)
         self.M2_criterion = nn.KLDivLoss(reduction='batchmean')
-        self.M2.fit(self.M2_train_dl, self.M2_optimizer, self.M2_scheduler, self.M2_criterion, tasks, epochs, self.Rx,
-                    self.Ry)
+        self.M2.fit(self.M2_train_dl, self.M2_optimizer, self.M2_scheduler, self.M2_criterion, tasks, epochs, self.Rx, self.Ry)
         data = pd.DataFrame()
         z = []
-        for i, (imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels) in enumerate(
-                self.M2_train_ds):
+        for i, (imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels, retinopathy_label2, macular_edema_label2, fovea_center_labels2, optical_disk_labels2) in enumerate( self.M2_train_ds):
             one_row = self.M2.forward(imgs[None, :].to(device))
             z.append(torch.concat(one_row).detach().cpu().numpy())
         data = pd.DataFrame(z)
         data.to_csv('./drive/MyDrive/IDRID/Labels/train/M2_predictions' + str(tasks) + '.csv')
 
-    def fit_M3(self, tasks, epochs):
+
+    def fit_predict_M3(self, tasks, epochs):
         self.M3_train_ds = IDRiD_Dataset_Unlabeled_Preds(self.data_transformer, tasks, data_type="train")
         self.M3_train_dl = DataLoader(self.M3_train_ds, batch_size=32, shuffle=True)
         self.M3_optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, self.M3.parameters()),
