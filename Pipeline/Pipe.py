@@ -39,6 +39,7 @@ class Pipe():
         return r_label, m_label, f_coords, o_coords
 
     def fit_ensemble_submodel_predict(self, subtasks, epochs):
+        self.ensemble[tuple(subtasks)] = MTL('M1').to(device)
         sub_train_ds = IDRiD_Dataset(self.data_transformer, 'train')
         sub_train_dl = DataLoader(sub_train_ds, batch_size=32, shuffle=True)
         sub_optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, self.ensemble[tuple(subtasks)].parameters()),
@@ -65,12 +66,13 @@ class Pipe():
         data = pd.DataFrame(z)
         data.to_csv('./drive/MyDrive/IDRID/Labels/train/M1_predictions' + str(subtasks) + '.csv')
 
-    def fit_predict_M1(self, tasks, epochs):
+    def fit_M1(self, tasks, epochs):
         all_combs = [list(i) for k in range(len(tasks)) for i in list(combinations(tasks, k + 1))]
         for sub_tasks in all_combs:
             print("Teaching submodel ", str(sub_tasks))
-            self.ensemble[tuple(sub_tasks)] = MTL('M1').to(device)
             self.fit_ensemble_submodel_predict(sub_tasks, epochs)
+
+    def predict_M1(self, tasks, epochs):
         sub_data12 = self.read_predictions("./drive/MyDrive/IDRID/Labels/train/M1_predictions[0, 1].csv")
         sub_data1 = self.read_predictions("./drive/MyDrive/IDRID/Labels/train/M1_predictions[0].csv")
         sub_data2 = self.read_predictions("./drive/MyDrive/IDRID/Labels/train/M1_predictions[1].csv")
@@ -161,6 +163,7 @@ class Pipe():
         data.to_csv('./M3_predictions' + str(tasks) + '.csv')
 
     def fit_pipe(self, tasks, epochs):
-        self.fit_predict_M1(tasks, epochs)
+        self.fit_M1(tasks, epochs)
+        self.predict_M1(tasks, epochs)
         self.fit_predict_M2(tasks, epochs)
         self.fit_predict_M3(tasks, epochs)
