@@ -52,13 +52,13 @@ class Pipe():
                                           patience=3,
                                           min_lr=1e-7,
                                           verbose=True)
-        W_T0 = torch.tensor([0.53, 2.13, 0.53, 0.74, 1.06])
-        W_T1 = torch.tensor([0.6, 1.8, 0.6])
+        W_T0 = torch.tensor([0.53, 2.13, 0.53, 0.74, 1.06]).to(device)
+        W_T1 = torch.tensor([0.6, 1.8, 0.6]).to(device)
         sub_criterion_t0 = nn.CrossEntropyLoss(weight = W_T0)
         sub_criterion_t1 = nn.CrossEntropyLoss(weight = W_T1)
         self.ensemble[tuple(subtasks)].fit(sub_train_dl, sub_optimizer, sub_scheduler, sub_criterion_t0, sub_criterion_t1,
                                             subtasks, epochs, self.Rx, self.Ry)
-        self.ensemble[tuple(subtasks)].load_state_dict(torch.load("./M1_weights" + str(subtasks) + ".pt"))
+        self.ensemble[tuple(subtasks)].load_state_dict(torch.load("./drive/MyDrive/IDRID/Labels/train/M1_weights" + str(subtasks) + ".pt"))
         self.ensemble[tuple(subtasks)].eval()
         data = pd.DataFrame()
         z = []
@@ -102,6 +102,8 @@ class Pipe():
                                               verbose=True)
         self.M2_criterion = nn.KLDivLoss(reduction='batchmean')
         self.M2.fit(self.M2_train_dl, self.M2_optimizer, self.M2_scheduler, self.M2_criterion, tasks, epochs, self.Rx, self.Ry)
+        self.M2.load_state_dict(torch.load("./drive/MyDrive/IDRID/Labels/train/M2_weights" + str(subtasks) + ".pt"))
+        self.M2.eval()
         data = pd.DataFrame()
         z = []
         for i, (imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels, retinopathy_label2, macular_edema_label2, fovea_center_labels2, optical_disk_labels2) in enumerate( self.M2_train_ds):
@@ -127,6 +129,8 @@ class Pipe():
         self.M3_criterion = nn.KLDivLoss(reduction='batchmean')
         self.M3.fit(self.M3_train_dl, self.M3_optimizer, self.M3_scheduler, self.M3_criterion, self.M3_criterion, tasks, epochs, self.Rx,
                     self.Ry)
+        self.M3.load_state_dict(torch.load("./drive/MyDrive/IDRID/Labels/train/M3_weights" + str(subtasks) + ".pt"))
+        self.M3.eval()
         self.M3_test_ds = IDRiD_Dataset(self.data_transformer, 'train')
         self.M3_test_dl = DataLoader(self.M3_test_ds, batch_size=32, shuffle=True)
         data = pd.DataFrame()

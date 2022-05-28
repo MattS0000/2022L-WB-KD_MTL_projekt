@@ -56,7 +56,7 @@ class MTL(nn.Module):
             current_loss = self.fit_iter(train_dl, Rx, Ry)
             if current_loss.item() < best_loss:
                 best_loss = current_loss.item()
-                torch.save(self.state_dict(), './drive/MyDrive/IDRID/Labels/train/' +self.state+'_weights' + str(tasks) + '.pt')
+                torch.save(self.state_dict(), './drive/MyDrive/IDRID/Labels/train/' + self.state+'_weights' + str(tasks) + '.pt')
                 print("Saved best model weights!")
 
     def fit_iter(self, train_dl, Rx, Ry):
@@ -88,8 +88,8 @@ class MTL(nn.Module):
                 loss2 = torch.sqrt(self.criterion2(fovea_center_pred.to(torch.double),fovea_center_labels.to(device).to(torch.double))) / 10
                 loss3 = torch.sqrt(self.criterion2(optical_disk_pred.to(torch.double), optical_disk_labels.to(device).to(torch.double))) / 10
             elif self.state == 'M2':
-                W_T0 = torch.tensor([0.53, 2.13, 0.53, 0.74, 1.06])
-                W_T1 = torch.tensor([0.6, 1.8, 0.6])
+                W_T0 = torch.tensor([0.53, 2.13, 0.53, 0.74, 1.06]).to(device)
+                W_T1 = torch.tensor([0.6, 1.8, 0.6]).to(device)
                 lossCE_t0 = nn.CrossEntropyLoss(weight = W_T0)
                 lossCE_t1 = nn.CrossEntropyLoss(weight = W_T1)
                 lossKL = nn.KLDivLoss(reduction='batchmean')
