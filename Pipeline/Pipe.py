@@ -52,8 +52,11 @@ class Pipe():
                                           patience=3,
                                           min_lr=1e-7,
                                           verbose=True)
-        sub_criterion = nn.CrossEntropyLoss()
-        self.ensemble[tuple(subtasks)].fit(sub_train_dl, sub_optimizer, sub_scheduler, sub_criterion,
+        W_T0 = torch.tensor([0.53, 2.13, 0.53, 0.74, 1.06])
+        W_T1 = torch.tensor([0.6, 1.8, 0.6])
+        sub_criterion_t0 = nn.CrossEntropyLoss(weights = W_T0)
+        sub_criterion_t1 = nn.CrossEntropyLoss(weights = W_T1)
+        self.ensemble[tuple(subtasks)].fit(sub_train_dl, sub_optimizer, sub_scheduler, sub_criterion_t0, sub_criterion_t1,
                                             subtasks, epochs, self.Rx, self.Ry)
         self.ensemble[tuple(subtasks)].load_state_dict(torch.load("./M1_weights" + str(subtasks) + ".pt"))
         self.ensemble[tuple(subtasks)].eval()
@@ -149,9 +152,9 @@ class Pipe():
                                               min_lr=1e-7,
                                               verbose=True)
         self.M3_criterion = nn.KLDivLoss(reduction='batchmean')
-        self.M3.fit(self.M3_train_dl, self.M3_optimizer, self.M3_scheduler, self.M3_criterion, tasks, epochs, self.Rx,
+        self.M3.fit(self.M3_train_dl, self.M3_optimizer, self.M3_scheduler, self.M3_criterion, self.M3_criterion, tasks, epochs, self.Rx,
                     self.Ry)
-        self.M3_test_ds = IDRiD_Dataset(self.data_transformer, 'test')
+        self.M3_test_ds = IDRiD_Dataset(self.data_transformer, 'train')
         self.M3_test_dl = DataLoader(self.M3_test_ds, batch_size=32, shuffle=True)
         data = pd.DataFrame()
         z = []

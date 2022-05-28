@@ -50,7 +50,7 @@ class IDRiD_Dataset_Teacher(IDRiD_General_Dataset):
         image = Image.open(self.full_filenames[idx])
         image = self.transform(image)
         table = self.labels.loc[idx].to_numpy()
-        return image, table[0:5], table[5:10], table[10:12], table[12:]
+        return image, table[0:5], table[5:8], table[8:10], table[10:]
 
 
 class IDRiD_Dataset_Unlabeled_Preds(IDRiD_Dataset_Teacher):
@@ -59,7 +59,7 @@ class IDRiD_Dataset_Unlabeled_Preds(IDRiD_Dataset_Teacher):
 
 
 class IDRiD_Dataset2(IDRiD_General_Dataset):
-    def __init__(self, transform, tasks, data_type="train",  model_num = "M1", index=0):
+    def __init__(self, transform, tasks, csv_filename, data_type="train", model_num="M1", index=0):
         # path to images
         path2data = os.path.join(path2img, data_type)
         # list of images
@@ -72,7 +72,7 @@ class IDRiD_Dataset2(IDRiD_General_Dataset):
         print(path2csvLabels)
         labels_df = pd.read_csv(path2csvLabels, index_col=[0])
         preds_df = pd.read_csv(path_to_preds, index_col = 0)
-        merged_df = pd.concat([preds_df, labels_df],axis=1)
+        merged_df = pd.concat([preds_df, labels_df], axis=1)
         self.labels = merged_df.drop('Image name', axis=1)
         self.transform = transform
 
@@ -80,4 +80,4 @@ class IDRiD_Dataset2(IDRiD_General_Dataset):
         image = Image.open(self.full_filenames[idx])
         image = self.transform(image)
         table = self.labels.loc[idx].to_numpy()
-        return image, table[0:5], table[5:10], table[10:12], table[12:14], table[14:15], table[ 15:16], table[16:18], table[18:20]
+        return image, table[0:5], table[5:8], table[8:10], table[10:12], table[12:13], table[13:14], table[14:16], table[16:18]
