@@ -101,8 +101,8 @@ class Pipe():
                                               min_lr=1e-7,
                                               verbose=True)
         self.M2_criterion = nn.KLDivLoss(reduction='batchmean')
-        self.M2.fit(self.M2_train_dl, self.M2_optimizer, self.M2_scheduler, self.M2_criterion, tasks, epochs, self.Rx, self.Ry)
-        self.M2.load_state_dict(torch.load("./drive/MyDrive/IDRID/Labels/train/M2_weights" + str(subtasks) + ".pt"))
+        self.M2.fit(self.M2_train_dl, self.M2_optimizer, self.M2_scheduler, self.M2_criterion, self.M2_criterion, tasks, epochs, self.Rx, self.Ry)
+        self.M2.load_state_dict(torch.load("./drive/MyDrive/IDRID/Labels/train/M2_weights" + str(tasks) + ".pt"))
         self.M2.eval()
         data = pd.DataFrame()
         z = []
@@ -129,7 +129,7 @@ class Pipe():
         self.M3_criterion = nn.KLDivLoss(reduction='batchmean')
         self.M3.fit(self.M3_train_dl, self.M3_optimizer, self.M3_scheduler, self.M3_criterion, self.M3_criterion, tasks, epochs, self.Rx,
                     self.Ry)
-        self.M3.load_state_dict(torch.load("./drive/MyDrive/IDRID/Labels/train/M3_weights" + str(subtasks) + ".pt"))
+        self.M3.load_state_dict(torch.load("./drive/MyDrive/IDRID/Labels/train/M3_weights" + str(tasks) + ".pt"))
         self.M3.eval()
         self.M3_test_ds = IDRiD_Dataset(self.data_transformer, 'train')
         self.M3_test_dl = DataLoader(self.M3_test_ds, batch_size=32, shuffle=True)
