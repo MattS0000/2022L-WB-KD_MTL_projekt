@@ -54,8 +54,8 @@ class Pipe():
                                           verbose=True)
         W_T0 = torch.tensor([0.53, 2.13, 0.53, 0.74, 1.06])
         W_T1 = torch.tensor([0.6, 1.8, 0.6])
-        sub_criterion_t0 = nn.CrossEntropyLoss(weights = W_T0)
-        sub_criterion_t1 = nn.CrossEntropyLoss(weights = W_T1)
+        sub_criterion_t0 = nn.CrossEntropyLoss(weight = W_T0)
+        sub_criterion_t1 = nn.CrossEntropyLoss(weight = W_T1)
         self.ensemble[tuple(subtasks)].fit(sub_train_dl, sub_optimizer, sub_scheduler, sub_criterion_t0, sub_criterion_t1,
                                             subtasks, epochs, self.Rx, self.Ry)
         self.ensemble[tuple(subtasks)].load_state_dict(torch.load("./M1_weights" + str(subtasks) + ".pt"))
@@ -86,33 +86,6 @@ class Pipe():
         voting = [pd.DataFrame(0.4 * x + 0.6 * y) for x, y in zip(sub_data12, joined_data)]
         prediction = pd.concat(voting, axis=1)
         prediction.to_csv('./drive/MyDrive/IDRID/Labels/train/Ensemble_predictions' + str(tasks) + '.csv')
-
-    def __fit_predict_M1(self, tasks, epochs):
-        self.M1_train_ds = IDRiD_Dataset(self.data_transformer, 'train')
-        self.M1_train_dl = DataLoader(self.M1_train_ds, batch_size=32, shuffle=True)
-        self.M1_optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, self.M1.parameters()),
-                                            weight_decay=1e-6,
-                                            momentum=0.9,
-                                            lr=1e-3,
-                                            nesterov=True)
-        self.M1_scheduler = ReduceLROnPlateau(self.M1_optimizer,
-                                              factor=0.5,
-                                              patience=3,
-                                              min_lr=1e-7,
-                                              verbose=True)
-        self.M1_criterion = nn.CrossEntropyLoss()
-        self.M1.fit(self.M1_train_dl, self.M1_optimizer, self.M1_scheduler, self.M1_criterion, tasks, epochs, self.Rx,
-                    self.Ry)
-        self.M1.load_state_dict(torch.load("./M1_weights" + str(tasks) + ".pt"))
-        self.M1.eval()
-        data = pd.DataFrame()
-        z = []
-        for i, (imgs, retinopathy_label, macular_edema_label, fovea_center_labels, optical_disk_labels) in enumerate(
-                self.M1_train_ds):
-            one_row = self.M1.forward(imgs[None, :].to(device))
-            z.append(torch.concat(one_row).detach().cpu().numpy())
-        data = pd.DataFrame(z)
-        data.to_csv('./drive/MyDrive/IDRID/Labels/train/M1_predictions' + str(tasks) + '.csv')
 
     def fit_predict_M2(self, tasks, epochs):
         self.M2_train_ds = IDRiD_Dataset2(self.data_transformer, tasks, 'train')

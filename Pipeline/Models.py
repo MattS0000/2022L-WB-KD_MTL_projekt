@@ -90,8 +90,8 @@ class MTL(nn.Module):
             elif self.state == 'M2':
                 W_T0 = torch.tensor([0.53, 2.13, 0.53, 0.74, 1.06])
                 W_T1 = torch.tensor([0.6, 1.8, 0.6])
-                lossCE_t0 = nn.CrossEntropyLoss(weights = W_T0)
-                lossCE_t1 = nn.CrossEntropyLoss(weights = W_T1)
+                lossCE_t0 = nn.CrossEntropyLoss(weight = W_T0)
+                lossCE_t1 = nn.CrossEntropyLoss(weight = W_T1)
                 lossKL = nn.KLDivLoss(reduction='batchmean')
                 loss0CE = lossCE_t0(retinopathy_pred, torch.reshape(retinopathy_label2, (-1,)).to(device).to(torch.int64)).to(torch.float64)
                 loss1CE = lossCE_t1(macular_edema_pred, torch.reshape(macular_edema_label2, (-1, )).to(device).to(torch.int64)).to(torch.float64)
