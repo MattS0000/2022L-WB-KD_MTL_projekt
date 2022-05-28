@@ -140,7 +140,7 @@ class Pipe():
             one_row = self.M3.forward(imgs[None, :].to(device))
             z.append(torch.concat(one_row).detach().cpu().numpy())
         data = pd.DataFrame(z)
-        data.to_csv('./M3_predictions' + str(tasks) + '.csv')
+        data.to_csv('./drive/MyDrive/IDRID/Labels/train/M3_predictions' + str(tasks) + '.csv')
 
     def fit_pipe(self, tasks, epochs):
         self.fit_M1(tasks, epochs)
