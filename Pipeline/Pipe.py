@@ -32,10 +32,10 @@ class Pipe():
 
     def read_predictions(self, filename):
         table = pd.read_csv(filename, index_col=0)
-        r_label, m_label = table.iloc[:, 0:5], table.iloc[:, 5:10]
+        r_label, m_label = table.iloc[:, 0:5], table.iloc[:, 5:8]
         r_label = softmax(torch.tensor(r_label.values), dim=-1)
         m_label = softmax(torch.tensor(m_label.values), dim=-1)
-        f_coords, o_coords = table.iloc[:, 10:12], table.iloc[:, 12:]
+        f_coords, o_coords = table.iloc[:, 8:10], table.iloc[:, 10:]
         return r_label, m_label, f_coords, o_coords
 
     def fit_ensemble_submodel_predict(self, subtasks, epochs):
@@ -80,9 +80,9 @@ class Pipe():
         sub_data1 = self.read_predictions("./drive/MyDrive/IDRID/Labels/train/M1_predictions[0].csv")
         sub_data2 = self.read_predictions("./drive/MyDrive/IDRID/Labels/train/M1_predictions[1].csv")
         joined_data = (sub_data1[0].numpy(),
-                       pd.DataFrame(sub_data1[1].numpy(), columns=[5, 6, 7, 8, 9]), sub_data2[2], sub_data2[3])
+                       pd.DataFrame(sub_data1[1].numpy(), columns=[5, 6, 7]), sub_data2[2], sub_data2[3])
         sub_data12 = (sub_data12[0].numpy(),
-                      pd.DataFrame(sub_data12[1].numpy(), columns=[5, 6, 7, 8, 9]), sub_data12[2],sub_data12[3])
+                      pd.DataFrame(sub_data12[1].numpy(), columns=[5, 6, 7]), sub_data12[2],sub_data12[3])
         voting = [pd.DataFrame(0.4 * x + 0.6 * y) for x, y in zip(sub_data12, joined_data)]
         prediction = pd.concat(voting, axis=1)
         prediction.to_csv('./drive/MyDrive/IDRID/Labels/train/Ensemble_predictions' + str(tasks) + '.csv')
