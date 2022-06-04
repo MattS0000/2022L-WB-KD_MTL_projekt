@@ -15,3 +15,6 @@ M1 [0,1] - https://drive.google.com/file/d/1-kaFiPhkexICcVWTDGQfPnoClWo8k8zl/vie
 M2 [0,1] - https://drive.google.com/file/d/1-0h8cnnBYhAT4_2Wi2vyP1SXthUeyrhi/view?usp=sharing
 
 M3 [0,1] - https://drive.google.com/file/d/1i84LwXU2yAeRnAg-orsqKDDp_PscbKPO/view?usp=sharing
+
+## Usage of code
+First run the Data_transform notebook with the images as in the repo. Then use the MTL notebook to see a usage of our models pipeline.
