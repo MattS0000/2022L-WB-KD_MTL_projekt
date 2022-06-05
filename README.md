@@ -17,4 +17,4 @@ M2 [0,1] - https://drive.google.com/file/d/1-0h8cnnBYhAT4_2Wi2vyP1SXthUeyrhi/vie
 M3 [0,1] - https://drive.google.com/file/d/1i84LwXU2yAeRnAg-orsqKDDp_PscbKPO/view?usp=sharing
 
 ## Usage of code
-First run the Data_transform notebook with the images as in the repo. Then use the MTL notebook to see a usage of our models pipeline. If run on google  collab, there should be no issues with paths, otherwise some code in Pipeline.Datasets and Pipeline.Pipeline needs to be changed.
+Install requirements from requirements.txt on your local Python. First run the Data_transform notebook with the images as in the repo. Then use the MTL notebook to see a usage of our models pipeline. If run on google  collab, there should be no issues with paths, otherwise some code in Pipeline.Datasets and Pipeline.Pipeline needs to be changed.
